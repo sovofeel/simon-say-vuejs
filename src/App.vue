@@ -7,17 +7,13 @@
           <li 
             v-for="(item, index) in game.items" 
             :key="item" 
-            @click="handleClick(index)" 
+            @click="handleClick($event, index)" 
             class="field-item"
             :class="getClassName(index) "
           />
         </ul>
       </div>
       <div class="game-info">
-         computerSequence: {{ game.computerSequence }}
-         playerSequence: {{ game.playerSequence }}
-
-        {{ game.checkSequence() }}
         <h2>Раунд: <span >{{ game.round }}</span></h2>
         <button @click="game.startGame()">Начать</button>
         <p v-if="STATUS.LOSE === game.status">
@@ -58,6 +54,10 @@
 import Game from '@/game'
 import { STATUS, DELAY } from '@/constants'
 import { sleep, asyncRemoveActiveClass, asyncAddActiveClass } from "@/utils"
+import sound0 from '@/sounds/0.ogg'
+import sound1 from '@/sounds/1.ogg'
+import sound2 from '@/sounds/2.ogg'
+import sound3 from '@/sounds/3.ogg'
 
 export default {
   name: 'App',
@@ -65,8 +65,18 @@ export default {
     STATUS,
     game: new Game(),
     isFieldEnabled: true,
+    sounds: [
+      sound0,
+      sound1,
+      sound2,
+      sound3,
+    ]
   }),
   methods: {
+    async playSound(index) {
+      const audio = new Audio(this.sounds[index]);
+      audio.play();
+    },
     async disableField () {
       this.isFieldEnabled = false
     },
@@ -82,11 +92,13 @@ export default {
       const gameInterval = this.game.interval
       const computerSequence = this.game.computerSequence
 
+      await sleep(DELAY);
       for (let index = 0; index < computerSequence.length; index++) {
         if (this.game.status === STATUS.LOSE) {
           return
         }
 
+        await this.playSound(computerSequence[index])
         await this.disableField()
         await asyncAddActiveClass(fieldNodes, computerSequence[index])
         await sleep(gameInterval);
@@ -95,9 +107,10 @@ export default {
         await this.enableField()
       }
     },
-    handleClick(value) {
+    handleClick($event, value) {
       if (STATUS.PROCESS === this.game.status && this.isFieldEnabled) {
         this.game.upPlayerSequence(value)
+        this.playSound(value)
       }
     },
     getClassName(value) {
@@ -118,13 +131,6 @@ export default {
         this.game.upComputerSequence()
         this.showSequence()
       },
-
-    // 'game.status' (status) {
-    //   if (status === STATUS.LOSE) {
-    //     this.game.computerSequence = []
-    //     const reflist = this.$refs.field.childNodes
-    //   }
-    // }
   }
 }
 </script>
@@ -172,8 +178,14 @@ ul, li {
   margin: 0;
 }
 
+
 .field-item:hover {
   border: 2px solid black;
+} 
+
+.field-item:active{
+  border: 2px solid rebeccapurple;
+  opacity: 1;
 }
 
 .red, .blue, .yellow, .green {

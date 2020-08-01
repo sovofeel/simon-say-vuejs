@@ -4,7 +4,7 @@ export const STATUS = {
   NEW: 'new'
 }
 
-export const DELAY = 300
+export const DELAY = 400
 
 export const DIFFICULTY = {
   EASY: 1500,

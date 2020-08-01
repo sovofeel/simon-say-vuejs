@@ -48,7 +48,6 @@ export default class Game {
 
   loop() {
     if (this.checkSequence()) {
-      
       if (this.computerSequence.length === this.playerSequence.length) {
         this.playerSequence = []
         this.round += 1
